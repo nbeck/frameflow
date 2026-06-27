@@ -1,0 +1,19 @@
+name: ADR proposal
+description: Propose or discuss an architecture decision
+title: "[ADR]: "
+labels: [architecture, needs-triage]
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+    validations:
+      required: true
+  - type: textarea
+    id: decision
+    attributes:
+      label: Proposed decision
+  - type: textarea
+    id: consequences
+    attributes:
+      label: Consequences

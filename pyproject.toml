@@ -1,0 +1,100 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "frameflow"
+version = "0.0.0"
+description = "Self-hosted photo delivery platform optimized for digital displays."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "FrameFlow Contributors" }]
+keywords = ["photos", "digital-frame", "dakboard", "self-hosted", "fastapi"]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Framework :: FastAPI",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia :: Graphics",
+]
+dependencies = [
+  "fastapi>=0.115",
+  "uvicorn[standard]>=0.30",
+  "pydantic>=2.8",
+  "pydantic-settings>=2.4",
+  "sqlalchemy>=2.0",
+  "alembic>=1.13",
+  "httpx>=0.27",
+  "python-multipart>=0.0.9",
+]
+
+[project.optional-dependencies]
+dev = [
+  "black>=24.8",
+  "ruff>=0.6",
+  "mypy>=1.11",
+  "pytest>=8.3",
+  "pytest-cov>=5.0",
+  "pytest-asyncio>=0.24",
+  "pre-commit>=3.8",
+  "mkdocs-material>=9.5",
+  "types-PyYAML>=6.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/YOUR_ORG/frameflow"
+Documentation = "https://YOUR_ORG.github.io/frameflow"
+Repository = "https://github.com/YOUR_ORG/frameflow"
+Issues = "https://github.com/YOUR_ORG/frameflow/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/frameflow"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312", "py313"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["A", "B", "C4", "E", "F", "I", "N", "UP", "W", "S", "SIM", "RUF"]
+ignore = ["S101"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+mypy_path = "src"
+packages = ["frameflow"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_any_generics = true
+no_implicit_optional = true
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "--strict-markers --strict-config --cov=frameflow --cov-report=term-missing"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+  "unit: fast isolated tests",
+  "integration: tests requiring local services or file system integration",
+  "contract: provider or API contract tests",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["src/frameflow"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true

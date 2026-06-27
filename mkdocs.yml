@@ -1,0 +1,63 @@
+site_name: FrameFlow
+site_description: Self-hosted photo delivery for digital displays
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+
+nav:
+  - Home: index.md
+  - Product:
+      - Vision: product/vision.md
+      - Principles: product/principles.md
+  - Architecture:
+      - Overview: architecture/overview.md
+      - System Context: architecture/system-context.md
+      - Bounded Contexts: architecture/bounded-contexts.md
+      - Storage: architecture/storage.md
+      - Asset Derivatives: architecture/asset-derivatives.md
+      - Data Model: architecture/data-model.md
+      - Provider Sync: architecture/provider-sync.md
+      - Sync Workflows: architecture/sync-workflows.md
+      - Rotation Engine: architecture/rotation-engine.md
+      - API Design: architecture/api-design.md
+      - DAKboard Integration: architecture/dakboard-integration.md
+      - Plugin System: architecture/plugin-system.md
+      - Background Workers: architecture/background-workers.md
+      - Photo Lifecycle: architecture/photo-lifecycle.md
+      - Security and Privacy: architecture/security-privacy.md
+  - Development:
+      - Repository Layout: development/repository-layout.md
+      - Standards: development/standards.md
+      - Testing Strategy: development/testing-strategy.md
+      - Release Strategy: development/release-strategy.md
+      - AI Implementation Guide: development/ai-implementation-guide.md
+  - Operations:
+      - Deployment: operations/deployment.md
+      - Backup and Restore: operations/backup-restore.md
+      - Observability: operations/observability.md
+      - Security: operations/security.md
+  - Roadmap:
+      - Milestone 0: roadmap/milestone-0-repository-foundation.md
+      - Milestone 1: roadmap/milestone-1-core-domain-storage.md
+      - Milestone 2: roadmap/milestone-2-provider-reconciliation.md
+      - Milestone 3: roadmap/milestone-3-rotation-engine.md
+      - Milestone 4: roadmap/milestone-4-dakboard-delivery.md
+      - Milestone 5: roadmap/milestone-5-operations-hardening.md
+  - GitHub:
+      - Labels: github/labels.md
+      - Milestones: github/milestones.md
+      - Project Board: github/project-board.md
+      - Initial Issues: github/initial-issues.md
+  - Reference:
+      - API: reference/api.md
+      - Configuration: reference/configuration.md
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - tables
+  - fenced_code

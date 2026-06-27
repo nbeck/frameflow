@@ -1,0 +1,12 @@
+documentation:
+  - changed-files:
+      - any-glob-to-any-file: ["docs/**", "*.md", "adr/**"]
+ci:
+  - changed-files:
+      - any-glob-to-any-file: [".github/workflows/**"]
+docker:
+  - changed-files:
+      - any-glob-to-any-file: ["Dockerfile", "docker/**", "docker-compose.yml"]
+python:
+  - changed-files:
+      - any-glob-to-any-file: ["src/**", "tests/**", "pyproject.toml"]
