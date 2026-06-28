@@ -1,5 +1,8 @@
 """Typed configuration models for FrameFlow."""
 
+from pathlib import Path
+from typing import Literal
+
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -12,6 +15,16 @@ from .defaults import (
     DEFAULT_PHOTO_LIBRARY,
     DEFAULT_PORT,
 )
+
+
+class PhotoLibrarySettings(BaseSettings):
+    """Configuration for a photo library."""
+
+    id: str
+    name: str
+    type: Literal["local"] = "local"
+    path: Path
+    enabled: bool = True
 
 
 class Settings(BaseSettings):
@@ -30,5 +43,15 @@ class Settings(BaseSettings):
     data_dir: str = Field(default=DEFAULT_DATA_DIR)
     database_path: str = Field(default=DEFAULT_DATABASE_PATH)
     photo_library: str = Field(default=DEFAULT_PHOTO_LIBRARY)
+
+    photo_libraries: list[PhotoLibrarySettings] = Field(
+        default_factory=lambda: [
+            PhotoLibrarySettings(
+                id="default",
+                name="Default Photo Library",
+                path=Path(DEFAULT_PHOTO_LIBRARY),
+            )
+        ]
+    )
 
     log_level: str = Field(default=DEFAULT_LOG_LEVEL)
