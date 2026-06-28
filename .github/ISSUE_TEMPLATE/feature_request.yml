@@ -1,28 +1,67 @@
 name: Feature request
-description: Suggest an improvement
+description: Propose a new capability or user-facing behavior.
 title: "[Feature]: "
-labels: [enhancement, needs-triage]
+labels: ["feature", "status: triage"]
 body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for new product capabilities. For smaller improvements, use the enhancement form.
+
   - type: textarea
     id: problem
     attributes:
       label: Problem
-      description: What user problem does this solve?
+      description: What problem should this solve?
+      placeholder: Describe the user need or workflow gap.
     validations:
       required: true
+
   - type: textarea
     id: proposal
     attributes:
-      label: Proposal
+      label: Proposed solution
+      description: What should FrameFlow do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Other approaches, tools, or workarounds considered.
+    validations:
+      required: false
+
   - type: dropdown
     id: area
     attributes:
       label: Area
       options:
-        - Providers
-        - Rotation engine
-        - API
-        - Storage
-        - Display clients
-        - Documentation
-        - Other
+        - ingestion
+        - metadata
+        - scheduler
+        - storage
+        - clients
+        - dakboard
+        - api
+        - ui
+        - sync
+        - infrastructure
+        - documentation
+        - testing
+        - github
+        - unknown
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: What must be true for this to be considered done?
+      placeholder: |
+        - [ ] ...
+        - [ ] ...
+    validations:
+      required: false

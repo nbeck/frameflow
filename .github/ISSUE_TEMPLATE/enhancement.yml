@@ -1,0 +1,42 @@
+name: Enhancement
+description: Suggest an improvement to existing behavior, docs, tooling, or UX.
+title: "[Enhancement]: "
+labels: ["enhancement", "status: triage"]
+body:
+  - type: textarea
+    id: current
+    attributes:
+      label: Current behavior
+      description: What exists today?
+    validations:
+      required: true
+
+  - type: textarea
+    id: improvement
+    attributes:
+      label: Proposed improvement
+      description: What should be better?
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - ingestion
+        - metadata
+        - scheduler
+        - storage
+        - clients
+        - dakboard
+        - api
+        - ui
+        - sync
+        - infrastructure
+        - documentation
+        - testing
+        - github
+        - unknown
+    validations:
+      required: true
