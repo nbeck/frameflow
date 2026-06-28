@@ -29,6 +29,7 @@ dependencies = [
   "alembic>=1.13",
   "httpx>=0.27",
   "python-multipart>=0.0.9",
+  "pillow>=12.2.0",
 ]
 
 [project.optional-dependencies]

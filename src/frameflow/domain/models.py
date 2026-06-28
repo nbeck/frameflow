@@ -32,7 +32,13 @@ class Photo:
     id: str
     library_id: str
     source_path: Path
+
     content_hash: str | None = None
+    file_size: int = 0
+    width: int = 0
+    height: int = 0
+    image_format: str = ""
+    modified_at: datetime | None = None
 
 
 @dataclass(frozen=True)

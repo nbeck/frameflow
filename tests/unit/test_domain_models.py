@@ -21,17 +21,29 @@ def test_album_model() -> None:
 
 
 def test_photo_model() -> None:
+    modified_at = datetime(2026, 1, 1, tzinfo=UTC)
+
     photo = Photo(
         id="photo-1",
         library_id="library-1",
         source_path=Path("/photos/image.jpg"),
         content_hash="abc123",
+        file_size=12345,
+        width=4032,
+        height=3024,
+        image_format="JPEG",
+        modified_at=modified_at,
     )
 
     assert photo.id == "photo-1"
     assert photo.library_id == "library-1"
     assert photo.source_path == Path("/photos/image.jpg")
     assert photo.content_hash == "abc123"
+    assert photo.file_size == 12345
+    assert photo.width == 4032
+    assert photo.height == 3024
+    assert photo.image_format == "JPEG"
+    assert photo.modified_at == modified_at
 
 
 def test_photo_model_allows_missing_content_hash() -> None:
@@ -42,6 +54,11 @@ def test_photo_model_allows_missing_content_hash() -> None:
     )
 
     assert photo.content_hash is None
+    assert photo.file_size == 0
+    assert photo.width == 0
+    assert photo.height == 0
+    assert photo.image_format == ""
+    assert photo.modified_at is None
 
 
 def test_client_model() -> None:

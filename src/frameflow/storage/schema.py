@@ -1,6 +1,6 @@
 """SQLite schema definitions for FrameFlow."""
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -10,8 +10,14 @@ CREATE TABLE IF NOT EXISTS schema_version (
 
 CREATE TABLE IF NOT EXISTS photos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    library_id TEXT NOT NULL,
     source_path TEXT NOT NULL UNIQUE,
-    content_hash TEXT,
+    content_hash TEXT NOT NULL,
+    file_size INTEGER NOT NULL,
+    width INTEGER NOT NULL,
+    height INTEGER NOT NULL,
+    image_format TEXT NOT NULL,
+    modified_at TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
