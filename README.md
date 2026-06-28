@@ -77,3 +77,86 @@ The current repository scaffold is expected to pass formatting, linting, type ch
 ## License
 
 FrameFlow is licensed under the Apache License 2.0. See [LICENSE](LICENSE), [NOTICE](NOTICE), and [licenses/](licenses/).
+
+## Development
+
+### Prerequisites
+
+- Python 3.12 or newer
+- Git
+- Docker Desktop (optional, for containerized development)
+
+### Clone the repository
+
+```bash
+git clone https://github.com/nbeck/frameflow.git
+cd frameflow
+```
+
+### Create a virtual environment
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+### Install dependencies
+
+```bash
+pip install -e ".[dev]"
+```
+
+## Running FrameFlow
+
+Start the development server:
+
+```bash
+uvicorn frameflow.api.app:app --reload
+```
+
+The API will be available at:
+
+```
+http://localhost:8000
+```
+
+Health endpoint:
+
+```
+http://localhost:8000/health
+```
+
+## Quality Checks
+
+Run the complete validation suite before committing changes:
+
+```bash
+uv run ruff check .
+uv run black --check .
+uv run mypy .
+uv run pytest
+```
+
+## Docker Development
+
+Build and start the development environment:
+
+```bash
+docker compose up --build
+```
+
+Stop the stack:
+
+```bash
+docker compose down
+```
+
+## Contributing
+
+Before opening a pull request:
+
+1. Create a feature branch from `main`.
+2. Keep changes focused on a single issue.
+3. Run the full validation suite.
+4. Ensure all GitHub Actions checks pass.
+5. Squash merge after review.
