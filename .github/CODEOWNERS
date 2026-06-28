@@ -1,0 +1,28 @@
+# FrameFlow code owners
+# GitHub will request reviews from these owners when matching files change.
+
+# Default ownership
+* @nbeck
+
+# Repository governance and automation
+.github/ @nbeck
+.github/workflows/ @nbeck
+.github/ISSUE_TEMPLATE/ @nbeck
+.github/PULL_REQUEST_TEMPLATE.md @nbeck
+.github/CODEOWNERS @nbeck
+
+# Documentation
+*.md @nbeck
+docs/ @nbeck
+
+# Application code
+src/ @nbeck
+tests/ @nbeck
+
+# Packaging and tooling
+pyproject.toml @nbeck
+uv.lock @nbeck
+justfile @nbeck
+.pre-commit-config.yaml @nbeck
+Dockerfile @nbeck
+docker-compose.yml @nbeck
