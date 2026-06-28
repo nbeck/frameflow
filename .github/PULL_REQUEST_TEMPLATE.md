@@ -1,17 +1,38 @@
 ## Summary
 
+Describe what this pull request changes and why.
+
+## Related issue
+
+Closes #
+
 ## Type of change
 
-- [ ] Documentation
-- [ ] Tooling or repository maintenance
-- [ ] Feature implementation
 - [ ] Bug fix
-- [ ] Architecture decision
+- [ ] Feature
+- [ ] Enhancement
+- [ ] Documentation
+- [ ] Refactor
+- [ ] Test coverage
+- [ ] CI / infrastructure
+- [ ] Security
+
+## Testing
+
+Describe how this was tested.
+
+- [ ] Tests pass locally
+- [ ] Pre-commit checks pass locally
+- [ ] Documentation updated, if needed
+
+## Screenshots or examples
+
+Add screenshots, API examples, logs, or before/after notes if helpful.
 
 ## Checklist
 
-- [ ] I ran `make check`
-- [ ] I added or updated tests where relevant
-- [ ] I updated documentation where relevant
-- [ ] I added an ADR for material architecture changes
-- [ ] This PR does not include secrets, credentials, or personal photos
+- [ ] I have linked the relevant issue
+- [ ] I have kept the change focused and reviewable
+- [ ] I have added or updated tests where appropriate
+- [ ] I have considered backwards compatibility
+- [ ] I have updated documentation where appropriate
