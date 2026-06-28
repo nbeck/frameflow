@@ -24,9 +24,8 @@ CREATE TABLE IF NOT EXISTS photos (
 
 CREATE TABLE IF NOT EXISTS photo_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    photo_id INTEGER NOT NULL,
+    photo_id TEXT NOT NULL,
     displayed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    client_name TEXT NOT NULL,
-    FOREIGN KEY (photo_id) REFERENCES photos(id) ON DELETE CASCADE
+    client_name TEXT NOT NULL
 );
 """
