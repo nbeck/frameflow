@@ -4,12 +4,19 @@ import sqlite3
 from functools import lru_cache
 from pathlib import Path
 
-from frameflow.config import load_settings
+from frameflow.config import Settings, load_settings
 from frameflow.history import RotationHistoryRepository
 from frameflow.rotation import RotationEngine
 from frameflow.services import PhotoService
 from frameflow.services.photo_selection import PhotoSelectionService
 from frameflow.storage import PhotoRepository
+
+
+@lru_cache
+def get_settings() -> Settings:
+    """Return the application settings."""
+
+    return load_settings()
 
 
 @lru_cache
