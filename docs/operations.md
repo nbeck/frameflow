@@ -35,6 +35,8 @@ cp .env.example .env
 | Variable | Default | Description |
 |---|---|---|
 | `FRAMEFLOW_ENVIRONMENT` | `development` | Environment label (e.g. `production`) |
+| `FRAMEFLOW_HOST` | `127.0.0.1` | Host address passed to uvicorn when starting via `uv run frameflow` |
+| `FRAMEFLOW_PORT` | `8000` | Port passed to uvicorn when starting via `uv run frameflow` |
 | `FRAMEFLOW_PHOTO_LIBRARY` | `photos` | Path to the photo library directory. **Must exist before startup.** |
 | `FRAMEFLOW_DATABASE_PATH` | `data/frameflow.db` | Path to the SQLite database file. The parent directory is created automatically. |
 | `FRAMEFLOW_LOG_LEVEL` | `INFO` | Python log level: `DEBUG`, `INFO`, `WARNING`, or `ERROR` |
@@ -54,24 +56,32 @@ FRAMEFLOW_SYNC_INTERVAL_SECONDS=300
 
 ### Known limitations
 
-The following settings are defined in the `Settings` model and accepted by the configuration
-loader, but are **not yet consumed at runtime**:
+The following setting is defined in the `Settings` model but is not consumed at runtime:
 
 | Variable | Default | Status |
 |---|---|---|
-| `FRAMEFLOW_HOST` | `127.0.0.1` | Defined in Settings but not read by uvicorn. Pass `--host` directly to the uvicorn command. |
-| `FRAMEFLOW_PORT` | `8000` | Defined in Settings but not read by uvicorn. Pass `--port` directly to the uvicorn command. |
 | `FRAMEFLOW_DATA_DIR` | `data` | Defined in Settings but not consumed at runtime. Has no effect beyond establishing the default path for `FRAMEFLOW_DATABASE_PATH`. |
 
 ---
 
 ## Starting the server
 
+The preferred startup command reads `FRAMEFLOW_HOST` and `FRAMEFLOW_PORT` from settings:
+
+```bash
+uv run frameflow
+```
+
+This is equivalent to running `python -m frameflow` with the package installed.
+
+**Lower-level alternative** (bypasses `FRAMEFLOW_HOST` and `FRAMEFLOW_PORT` — host and port must
+be supplied as CLI flags):
+
 ```bash
 uv run uvicorn frameflow.api.app:app --host 127.0.0.1 --port 8000
 ```
 
-For development with auto-reload:
+For development with auto-reload (also bypasses settings for host/port):
 
 ```bash
 uv run uvicorn frameflow.api.app:app --reload

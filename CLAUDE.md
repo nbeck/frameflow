@@ -33,7 +33,17 @@ uv run pytest -m unit
 uv run pytest -m integration
 ```
 
-Start the API server:
+Start the API server (preferred — reads FRAMEFLOW_HOST and FRAMEFLOW_PORT from settings):
+```bash
+uv run frameflow
+```
+
+Lower-level alternative (bypasses FRAMEFLOW_HOST and FRAMEFLOW_PORT):
+```bash
+uv run uvicorn frameflow.api.app:app --host 127.0.0.1 --port 8000
+```
+
+For development with auto-reload:
 ```bash
 uv run uvicorn frameflow.api.app:app --reload
 ```
