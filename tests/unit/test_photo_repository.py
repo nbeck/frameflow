@@ -14,7 +14,7 @@ def test_photo_repository_insert(tmp_path: Path) -> None:
 
         repository.upsert(
             Photo(
-                id="1",
+                id="abc123",
                 library_id="family",
                 source_path=Path("/photos/family.jpg"),
                 content_hash="abc123",
@@ -39,7 +39,7 @@ def test_photo_repository_upsert(tmp_path: Path) -> None:
         repository = PhotoRepository(database)
 
         photo = Photo(
-            id="1",
+            id="abc123",
             library_id="family",
             source_path=Path("/photos/family.jpg"),
             content_hash="abc123",

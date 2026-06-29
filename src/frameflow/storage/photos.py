@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 
 from frameflow.domain import Photo
@@ -54,6 +55,45 @@ class PhotoRepository:
         )
 
         self._connection.commit()
+
+    def list_all(self) -> list[Photo]:
+        """Return all stored photos."""
+
+        rows = self._connection.execute("""
+            SELECT
+                library_id,
+                source_path,
+                content_hash,
+                file_size,
+                width,
+                height,
+                image_format,
+                modified_at
+            FROM photos
+            ORDER BY source_path
+            """).fetchall()
+
+        photos: list[Photo] = []
+        for row in rows:
+            content_hash = str(row[2])
+            modified_at_value = str(row[7])
+            photos.append(
+                Photo(
+                    id=content_hash,
+                    library_id=str(row[0]),
+                    source_path=Path(str(row[1])),
+                    content_hash=content_hash,
+                    file_size=int(row[3]),
+                    width=int(row[4]),
+                    height=int(row[5]),
+                    image_format=str(row[6]),
+                    modified_at=(
+                        datetime.fromisoformat(modified_at_value) if modified_at_value else None
+                    ),
+                )
+            )
+
+        return photos
 
     def list_paths(self) -> set[Path]:
         """Return all stored photo source paths."""
