@@ -21,6 +21,10 @@ class PhotoService:
         self._history_repository = history_repository
         self._selection_service = selection_service
 
+    def get_photo_by_id(self, photo_id: str) -> Photo | None:
+        """Return a photo by its canonical ID."""
+        return self._photo_repository.get_by_id(photo_id)
+
     def list_photos(self) -> list[Photo]:
         """Return all known photos."""
         return self._photo_repository.list_all()
