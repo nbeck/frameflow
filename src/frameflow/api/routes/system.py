@@ -3,12 +3,17 @@
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 
-from frameflow.api.dependencies import get_photo_service, get_settings, get_sync_state
+from frameflow.api.dependencies import (
+    get_photo_service,
+    get_scan_scheduler,
+    get_settings,
+    get_sync_state,
+)
 from frameflow.config import Settings
 from frameflow.providers.local import SUPPORTED_IMAGE_EXTENSIONS
-from frameflow.scanning import SyncState
+from frameflow.scanning import ScanScheduler, SyncState
 from frameflow.services import PhotoService
 
 router = APIRouter(tags=["system"])
@@ -38,6 +43,26 @@ def status(
         ),
         "last_sync_photos_processed": sync_state.last_sync_photos_processed,
         "sync_running": sync_state.sync_running,
+    }
+
+
+@router.post("/sync")
+def trigger_sync(
+    scheduler: Annotated[ScanScheduler, Depends(get_scan_scheduler)],
+    sync_state: Annotated[SyncState, Depends(get_sync_state)],
+) -> dict[str, object]:
+    """Trigger a single photo library synchronization run."""
+
+    if sync_state.sync_running:
+        raise HTTPException(status_code=409, detail="Sync already in progress.")
+
+    count = scheduler.run_once()
+
+    assert sync_state.last_sync_completed_at is not None
+    return {
+        "status": "ok",
+        "photos_processed": count,
+        "sync_completed_at": sync_state.last_sync_completed_at.isoformat(),
     }
 
 
