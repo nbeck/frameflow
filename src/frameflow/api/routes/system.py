@@ -13,7 +13,7 @@ from frameflow.api.dependencies import (
 )
 from frameflow.config import Settings
 from frameflow.providers.local import SUPPORTED_IMAGE_EXTENSIONS
-from frameflow.scanning import ScanScheduler, SyncState
+from frameflow.scanning import ScanScheduler, SyncAlreadyRunningError, SyncState
 from frameflow.services import PhotoService
 
 router = APIRouter(tags=["system"])
@@ -53,10 +53,10 @@ def trigger_sync(
 ) -> dict[str, object]:
     """Trigger a single photo library synchronization run."""
 
-    if sync_state.sync_running:
-        raise HTTPException(status_code=409, detail="Sync already in progress.")
-
-    count = scheduler.run_once()
+    try:
+        count = scheduler.run_once()
+    except SyncAlreadyRunningError as exc:
+        raise HTTPException(status_code=409, detail="Sync already in progress.") from exc
 
     assert sync_state.last_sync_completed_at is not None
     return {

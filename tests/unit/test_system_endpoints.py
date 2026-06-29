@@ -15,7 +15,7 @@ from frameflow.api.dependencies import (
 )
 from frameflow.config import Settings
 from frameflow.domain import Photo
-from frameflow.scanning import SyncState
+from frameflow.scanning import SyncAlreadyRunningError, SyncState
 
 
 class StubPhotoService:
@@ -45,6 +45,11 @@ class _StubScheduler:
         self._state.last_sync_completed_at = self._completed_at
         self._state.last_sync_photos_processed = self._count
         return self._count
+
+
+class _BusyScheduler:
+    def run_once(self) -> int:
+        raise SyncAlreadyRunningError("Sync already in progress.")
 
 
 class _FailingScheduler:
@@ -199,11 +204,7 @@ def test_sync_returns_200_with_correct_fields(tmp_path: Path) -> None:
 
 @pytest.mark.unit
 def test_sync_returns_409_when_already_running() -> None:
-    state = SyncState(sync_running=True)
-    app.dependency_overrides[get_sync_state] = lambda: state
-    app.dependency_overrides[get_scan_scheduler] = lambda: _StubScheduler(
-        count=0, state=state, completed_at=datetime(2026, 1, 1, tzinfo=UTC)
-    )
+    app.dependency_overrides[get_scan_scheduler] = lambda: _BusyScheduler()
 
     try:
         response = TestClient(app).post("/sync")

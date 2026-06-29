@@ -3,7 +3,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from frameflow.scanning import ScanScheduler, SyncState
+from frameflow.scanning import ScanScheduler, SyncAlreadyRunningError, SyncState
 
 pytestmark = pytest.mark.unit
 
@@ -81,3 +81,50 @@ def test_run_once_does_not_record_completion_on_failure() -> None:
     assert state.sync_running is False
     assert state.last_sync_completed_at is None
     assert state.last_sync_photos_processed is None
+
+
+def test_run_once_raises_when_already_running() -> None:
+    state = SyncState()
+    scheduler_ref: list[ScanScheduler] = []
+
+    def reentrant_scan() -> int:
+        return scheduler_ref[0].run_once()
+
+    scanner = Mock()
+    scanner.scan.side_effect = reentrant_scan
+
+    scheduler = ScanScheduler(scanner, sync_state=state)
+    scheduler_ref.append(scheduler)
+
+    with pytest.raises(SyncAlreadyRunningError):
+        scheduler.run_once()
+
+    assert state.sync_running is False
+    assert state.last_sync_completed_at is None
+    assert state.last_sync_photos_processed is None
+
+
+def test_lock_released_after_successful_run() -> None:
+    scanner = Mock()
+    scanner.scan.return_value = 1
+    scheduler = ScanScheduler(scanner)
+
+    scheduler.run_once()
+    result = scheduler.run_once()
+
+    assert result == 1
+
+
+def test_lock_released_after_failed_run() -> None:
+    scanner = Mock()
+    scanner.scan.side_effect = [RuntimeError("fail"), 3]
+    state = SyncState()
+    scheduler = ScanScheduler(scanner, sync_state=state)
+
+    with pytest.raises(RuntimeError):
+        scheduler.run_once()
+
+    result = scheduler.run_once()
+
+    assert result == 3
+    assert state.last_sync_completed_at is not None
