@@ -1,6 +1,6 @@
 """SQLite schema definitions for FrameFlow."""
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 
 SCHEMA_SQL = """
 PRAGMA foreign_keys = ON;
@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS photos (
     height INTEGER NOT NULL,
     image_format TEXT NOT NULL,
     modified_at TEXT NOT NULL,
+    available INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
