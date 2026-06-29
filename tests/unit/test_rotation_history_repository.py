@@ -15,7 +15,7 @@ def _create_photo(
     repository = PhotoRepository(database)
     repository.upsert(
         Photo(
-            id=f"photo-{photo_number}",
+            id=f"hash-{photo_number}",
             library_id="default",
             source_path=Path(source_path),
             content_hash=f"hash-{photo_number}",
@@ -37,7 +37,7 @@ def test_rotation_history_repository_records_event(tmp_path: Path) -> None:
 
         repository.record(
             DisplayEvent(
-                photo_id="1",
+                photo_id="hash-1",
                 client_id="kitchen-dakboard",
                 displayed_at=datetime(2026, 1, 1, tzinfo=UTC),
             )
@@ -60,17 +60,17 @@ def test_rotation_history_repository_returns_recent_events_for_client(
         repository = RotationHistoryRepository(database)
 
         older_event = DisplayEvent(
-            photo_id="1",
+            photo_id="hash-1",
             client_id="kitchen-dakboard",
             displayed_at=datetime(2026, 1, 1, tzinfo=UTC),
         )
         newer_event = DisplayEvent(
-            photo_id="2",
+            photo_id="hash-2",
             client_id="kitchen-dakboard",
             displayed_at=datetime(2026, 1, 2, tzinfo=UTC),
         )
         other_client_event = DisplayEvent(
-            photo_id="3",
+            photo_id="hash-3",
             client_id="office-dakboard",
             displayed_at=datetime(2026, 1, 3, tzinfo=UTC),
         )
@@ -96,14 +96,14 @@ def test_rotation_history_repository_respects_limit(tmp_path: Path) -> None:
 
         repository.record(
             DisplayEvent(
-                photo_id="1",
+                photo_id="hash-1",
                 client_id="kitchen-dakboard",
                 displayed_at=datetime(2026, 1, 1, tzinfo=UTC),
             )
         )
         repository.record(
             DisplayEvent(
-                photo_id="2",
+                photo_id="hash-2",
                 client_id="kitchen-dakboard",
                 displayed_at=datetime(2026, 1, 2, tzinfo=UTC),
             )
@@ -112,6 +112,6 @@ def test_rotation_history_repository_respects_limit(tmp_path: Path) -> None:
         events = repository.recent_for_client("kitchen-dakboard", limit=1)
 
         assert len(events) == 1
-        assert events[0].photo_id == "2"
+        assert events[0].photo_id == "hash-2"
     finally:
         database.close()

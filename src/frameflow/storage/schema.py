@@ -1,6 +1,6 @@
 """SQLite schema definitions for FrameFlow."""
 
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
 
 SCHEMA_SQL = """
 PRAGMA foreign_keys = ON;
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS photos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     library_id TEXT NOT NULL,
     source_path TEXT NOT NULL UNIQUE,
-    content_hash TEXT NOT NULL,
+    content_hash TEXT NOT NULL UNIQUE,
     file_size INTEGER NOT NULL,
     width INTEGER NOT NULL,
     height INTEGER NOT NULL,
@@ -26,10 +26,10 @@ CREATE TABLE IF NOT EXISTS photos (
 
 CREATE TABLE IF NOT EXISTS photo_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    photo_id INTEGER NOT NULL,
+    photo_id TEXT NOT NULL,
     displayed_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     client_name TEXT NOT NULL,
-    FOREIGN KEY(photo_id) REFERENCES photos(id) ON DELETE CASCADE
+    FOREIGN KEY(photo_id) REFERENCES photos(content_hash) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS idx_photos_library_id

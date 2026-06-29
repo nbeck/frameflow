@@ -10,7 +10,7 @@ def test_initialize_database_creates_schema(tmp_path: Path) -> None:
 
     try:
         assert database_path.exists()
-        assert get_schema_version(connection) == 3
+        assert get_schema_version(connection) == 4
 
         foreign_keys_enabled = connection.execute("PRAGMA foreign_keys").fetchone()
         assert foreign_keys_enabled == (1,)
