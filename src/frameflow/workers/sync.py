@@ -6,11 +6,19 @@ from pathlib import Path
 from frameflow.config import Settings
 from frameflow.metadata import MetadataExtractor
 from frameflow.providers.local import LocalFileProvider
-from frameflow.scanning import PhotoScanner, ScanScheduler
+from frameflow.scanning import PhotoScanner, ScanScheduler, SyncState
 from frameflow.services import PhotoSynchronizer
 from frameflow.storage import PhotoRepository
 
 _LIBRARY_ID = "default"
+
+_sync_state = SyncState()
+
+
+def get_sync_state() -> SyncState:
+    """Return the shared in-memory sync state."""
+
+    return _sync_state
 
 
 def build_scan_scheduler(
@@ -28,4 +36,4 @@ def build_scan_scheduler(
         extractor=MetadataExtractor(),
     )
     scanner = PhotoScanner(provider=provider, synchronizer=synchronizer)
-    return ScanScheduler(scanner=scanner)
+    return ScanScheduler(scanner=scanner, sync_state=_sync_state)

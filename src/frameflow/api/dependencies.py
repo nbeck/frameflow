@@ -7,9 +7,11 @@ from pathlib import Path
 from frameflow.config import Settings, load_settings
 from frameflow.history import RotationHistoryRepository
 from frameflow.rotation import RotationEngine
+from frameflow.scanning import SyncState
 from frameflow.services import PhotoService
 from frameflow.services.photo_selection import PhotoSelectionService
 from frameflow.storage import PhotoRepository
+from frameflow.workers.sync import get_sync_state as _get_sync_state
 
 
 @lru_cache
@@ -37,3 +39,9 @@ def get_photo_service() -> PhotoService:
         history_repository=RotationHistoryRepository(connection),
         selection_service=PhotoSelectionService(RotationEngine()),
     )
+
+
+def get_sync_state() -> SyncState:
+    """Return the shared in-memory sync state."""
+
+    return _get_sync_state()
