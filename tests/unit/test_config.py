@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
+from pydantic import ValidationError
 
 from frameflow.api.app import app
 from frameflow.config import ConfigurationError, Settings, load_settings, validate_settings
@@ -17,6 +18,14 @@ def test_default_settings() -> None:
     assert settings.database_path == "data/frameflow.db"
     assert settings.photo_library == "photos"
     assert settings.log_level == "INFO"
+    assert settings.sync_enabled is False
+    assert settings.sync_interval_seconds == 300
+
+
+@pytest.mark.unit
+def test_sync_interval_seconds_must_be_positive() -> None:
+    with pytest.raises(ValidationError):
+        Settings(sync_interval_seconds=0)
 
 
 def test_load_settings_returns_settings() -> None:

@@ -11,6 +11,8 @@ from .defaults import (
     DEFAULT_LOG_LEVEL,
     DEFAULT_PHOTO_LIBRARY,
     DEFAULT_PORT,
+    DEFAULT_SYNC_ENABLED,
+    DEFAULT_SYNC_INTERVAL_SECONDS,
 )
 
 
@@ -32,3 +34,6 @@ class Settings(BaseSettings):
     photo_library: str = Field(default=DEFAULT_PHOTO_LIBRARY)
 
     log_level: str = Field(default=DEFAULT_LOG_LEVEL)
+
+    sync_enabled: bool = Field(default=DEFAULT_SYNC_ENABLED)
+    sync_interval_seconds: int = Field(default=DEFAULT_SYNC_INTERVAL_SECONDS, gt=0)
