@@ -10,7 +10,7 @@ from frameflow.rotation import RotationEngine
 from frameflow.scanning import ScanScheduler, SyncState
 from frameflow.services import PhotoService
 from frameflow.services.photo_selection import PhotoSelectionService
-from frameflow.storage import PhotoRepository
+from frameflow.storage import PhotoRepository, initialize_database
 from frameflow.workers.sync import get_shared_scheduler as _get_shared_scheduler
 from frameflow.workers.sync import get_sync_state as _get_sync_state
 
@@ -24,11 +24,11 @@ def get_settings() -> Settings:
 
 @lru_cache
 def get_database_connection() -> sqlite3.Connection:
-    """Return the shared SQLite database connection."""
+    """Return the shared SQLite database connection, initializing the schema on first run."""
 
     settings = load_settings()
     database_path = Path(settings.database_path)
-    return sqlite3.connect(database_path)
+    return initialize_database(database_path)
 
 
 def get_photo_service() -> PhotoService:

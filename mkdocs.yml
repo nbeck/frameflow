@@ -35,6 +35,7 @@ nav:
       - Release Strategy: development/release-strategy.md
       - AI Implementation Guide: development/ai-implementation-guide.md
   - Operations:
+      - Runbook: operations.md
       - Deployment: operations/deployment.md
       - Backup and Restore: operations/backup-restore.md
       - Observability: operations/observability.md
