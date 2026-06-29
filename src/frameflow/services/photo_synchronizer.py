@@ -33,6 +33,7 @@ class PhotoSynchronizer:
             self._repository.upsert(photo)
             processed += 1
 
-        self._repository.delete_missing(current_paths)
+        missing_paths = set(self._repository.list_paths()) - current_paths
+        self._repository.mark_unavailable(missing_paths)
 
         return processed

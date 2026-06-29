@@ -30,13 +30,21 @@ class PhotoService:
         return self._photo_repository.list_all()
 
     def get_next_photo(self, client_id: str) -> Photo | None:
-        """Return and record the next photo for a client."""
+        """Return and record the next photo for a client.
+
+        Returns None if no photos are available or the selected photo's
+        source file no longer exists on disk.
+        """
 
         photos = self._photo_repository.list_all()
         history = self._history_repository.recent_for_client(client_id)
 
         selected_photo = self._selection_service.next_photo(photos, history)
         if selected_photo is None:
+            return None
+
+        if not selected_photo.source_path.exists():
+            self._photo_repository.mark_unavailable({selected_photo.source_path})
             return None
 
         self._history_repository.record(

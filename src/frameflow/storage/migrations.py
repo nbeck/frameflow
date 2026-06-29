@@ -15,6 +15,17 @@ def get_schema_version(connection: sqlite3.Connection) -> int:
     return 0 if row is None else int(row[0])
 
 
+def migrate(connection: sqlite3.Connection) -> None:
+    """Apply any pending schema migrations."""
+
+    version = get_schema_version(connection)
+
+    if version == 4:
+        connection.execute("ALTER TABLE photos ADD COLUMN available INTEGER NOT NULL DEFAULT 1")
+        set_schema_version(connection)
+        connection.commit()
+
+
 def set_schema_version(connection: sqlite3.Connection) -> None:
     """Record the current schema version."""
 

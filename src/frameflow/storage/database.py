@@ -5,7 +5,7 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
-from .migrations import set_schema_version
+from .migrations import migrate, set_schema_version
 from .schema import SCHEMA_SQL
 
 
@@ -17,6 +17,7 @@ def initialize_database(path: Path) -> sqlite3.Connection:
     connection = sqlite3.connect(path)
     connection.execute("PRAGMA foreign_keys = ON")
     connection.executescript(SCHEMA_SQL)
+    migrate(connection)
     set_schema_version(connection)
     connection.commit()
 

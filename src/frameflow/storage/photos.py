@@ -28,9 +28,10 @@ class PhotoRepository:
                 width,
                 height,
                 image_format,
-                modified_at
+                modified_at,
+                available
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)
             ON CONFLICT(source_path)
             DO UPDATE SET
                 library_id = excluded.library_id,
@@ -40,6 +41,7 @@ class PhotoRepository:
                 height = excluded.height,
                 image_format = excluded.image_format,
                 modified_at = excluded.modified_at,
+                available = 1,
                 updated_at = CURRENT_TIMESTAMP
             """,
             (
@@ -95,7 +97,7 @@ class PhotoRepository:
         )
 
     def list_all(self) -> list[Photo]:
-        """Return all stored photos."""
+        """Return all available photos."""
 
         rows = self._connection.execute("""
             SELECT
@@ -108,6 +110,7 @@ class PhotoRepository:
                 image_format,
                 modified_at
             FROM photos
+            WHERE available = 1
             ORDER BY source_path
             """).fetchall()
 
@@ -139,6 +142,29 @@ class PhotoRepository:
         rows = self._connection.execute("SELECT source_path FROM photos").fetchall()
 
         return {Path(str(row[0])) for row in rows}
+
+    def mark_unavailable(self, paths: set[Path]) -> int:
+        """Mark photos at the given paths as unavailable.
+
+        Returns the number of records updated.
+        """
+
+        if not paths:
+            return 0
+
+        updated = 0
+        for path in paths:
+            cursor = self._connection.execute(
+                "UPDATE photos"
+                " SET available = 0, updated_at = CURRENT_TIMESTAMP"
+                " WHERE source_path = ?",
+                (str(path),),
+            )
+            updated += cursor.rowcount
+
+        self._connection.commit()
+
+        return updated
 
     def delete_missing(self, current_paths: set[Path]) -> int:
         """Delete photos whose source paths are not in the current path set."""

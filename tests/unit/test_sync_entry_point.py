@@ -56,7 +56,7 @@ def test_sync_is_idempotent(tmp_path: Path) -> None:
         database.close()
 
 
-def test_sync_removes_deleted_photos(tmp_path: Path) -> None:
+def test_sync_marks_deleted_photos_unavailable(tmp_path: Path) -> None:
     library = tmp_path / "library"
     library.mkdir()
     photo_path = library / "photo-1.jpg"
@@ -73,6 +73,8 @@ def test_sync_removes_deleted_photos(tmp_path: Path) -> None:
         photo_path.unlink()
         scheduler.run_once()
 
-        assert PhotoRepository(database).count() == 0
+        repo = PhotoRepository(database)
+        assert repo.count() == 1
+        assert repo.list_all() == []
     finally:
         database.close()
