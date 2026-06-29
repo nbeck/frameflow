@@ -54,14 +54,6 @@ FRAMEFLOW_SYNC_ENABLED=true
 FRAMEFLOW_SYNC_INTERVAL_SECONDS=300
 ```
 
-### Known limitations
-
-The following setting is defined in the `Settings` model but is not consumed at runtime:
-
-| Variable | Default | Status |
-|---|---|---|
-| `FRAMEFLOW_DATA_DIR` | `data` | Defined in Settings but not consumed at runtime. Has no effect beyond establishing the default path for `FRAMEFLOW_DATABASE_PATH`. |
-
 ---
 
 ## Starting the server

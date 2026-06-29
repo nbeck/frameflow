@@ -14,7 +14,6 @@ def test_default_settings() -> None:
     assert settings.environment == "development"
     assert settings.host == "127.0.0.1"
     assert settings.port == 8000
-    assert settings.data_dir == "data"
     assert settings.database_path == "data/frameflow.db"
     assert settings.photo_library == "photos"
     assert settings.log_level == "INFO"
