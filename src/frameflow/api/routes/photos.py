@@ -46,11 +46,14 @@ def photo_thumbnail(
     if not path.exists() or not path.is_file():
         raise HTTPException(status_code=404, detail="Photo file not found.")
 
-    with Image.open(path) as source:
-        rgb = source.convert("RGB")
-        rgb.thumbnail((400, 400))
-        buffer = io.BytesIO()
-        rgb.save(buffer, format="JPEG")
+    try:
+        with Image.open(path) as source:
+            rgb = source.convert("RGB")
+            rgb.thumbnail((400, 400))
+            buffer = io.BytesIO()
+            rgb.save(buffer, format="JPEG")
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail="Thumbnail could not be generated.") from exc
 
     return Response(
         content=buffer.getvalue(),

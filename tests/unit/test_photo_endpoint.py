@@ -340,3 +340,30 @@ def test_thumbnail_returns_404_when_file_missing(tmp_path: Path) -> None:
         assert response.json() == {"detail": "Photo file not found."}
     finally:
         app.dependency_overrides.clear()
+
+
+def test_thumbnail_returns_500_when_image_is_corrupt(tmp_path: Path) -> None:
+    photo_path = tmp_path / "corrupt.jpg"
+    photo_path.write_bytes(b"this is not a valid image file")
+
+    photo = Photo(
+        id="hash-1",
+        library_id="default",
+        source_path=photo_path,
+        content_hash="hash-1",
+        file_size=photo_path.stat().st_size,
+        width=100,
+        height=100,
+        image_format="JPEG",
+        modified_at=datetime(2026, 1, 1, tzinfo=UTC),
+    )
+    app.dependency_overrides[get_photo_service] = lambda: StubPhotoService(photo_by_id=photo)
+
+    try:
+        client = TestClient(app)
+        response = client.get("/photos/hash-1/thumbnail")
+
+        assert response.status_code == 500
+        assert response.json() == {"detail": "Thumbnail could not be generated."}
+    finally:
+        app.dependency_overrides.clear()

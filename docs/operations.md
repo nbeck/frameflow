@@ -132,6 +132,7 @@ The request is synchronous — it blocks until the scan completes and returns th
 ```
 
 Returns `409 Conflict` if a sync is already in progress.
+Returns `500 Internal Server Error` if an unexpected error occurs during the sync.
 
 ### Scheduled sync
 
@@ -222,14 +223,26 @@ identifier). FrameFlow tracks display history per client to avoid repeating phot
 Returns the raw image file directly (not JSON) with the appropriate `Content-Type`.
 
 **Error responses:**
-- `422` — `client_id` is blank
-- `404` — no available photos, or the source file is no longer on disk
+
+| Status | Condition |
+|---|---|
+| `422` | `client_id` is missing or blank |
+| `404` | No available photos in the library |
+| `404` | Photo exists in the database but the source file is no longer on disk |
 
 #### `GET /photos/{photo_id}/thumbnail`
 
 `photo_id` is the `content_hash` of the photo (returned by `GET /photos`).
 Returns a JPEG image regardless of the original format.
 Thumbnail dimensions are constrained to 400×400 pixels while preserving aspect ratio.
+
+**Error responses:**
+
+| Status | Condition |
+|---|---|
+| `404` | `photo_id` not found in the database |
+| `404` | Photo exists in the database but the source file is no longer on disk |
+| `500` | Source file exists but could not be processed into a thumbnail (e.g. corrupt file) |
 
 ---
 
