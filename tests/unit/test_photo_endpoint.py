@@ -160,6 +160,32 @@ def test_list_photos_does_not_expose_sqlite_surrogate_id(tmp_path: Path) -> None
         app.dependency_overrides.clear()
 
 
+def test_next_photo_rejects_blank_client_id() -> None:
+    app.dependency_overrides[get_photo_service] = lambda: StubPhotoService()
+
+    try:
+        client = TestClient(app)
+        response = client.get("/photos/next", params={"client_id": ""})
+
+        assert response.status_code == 422
+        assert response.json()["detail"] == "client_id must not be blank."
+    finally:
+        app.dependency_overrides.clear()
+
+
+def test_next_photo_rejects_whitespace_client_id() -> None:
+    app.dependency_overrides[get_photo_service] = lambda: StubPhotoService()
+
+    try:
+        client = TestClient(app)
+        response = client.get("/photos/next", params={"client_id": "   "})
+
+        assert response.status_code == 422
+        assert response.json()["detail"] == "client_id must not be blank."
+    finally:
+        app.dependency_overrides.clear()
+
+
 def test_next_photo_returns_file(tmp_path: Path) -> None:
     photo_path = tmp_path / "photo.jpg"
     photo_path.write_bytes(b"fake image data")
