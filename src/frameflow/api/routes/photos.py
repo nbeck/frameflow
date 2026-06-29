@@ -36,6 +36,9 @@ def next_photo(
 ) -> FileResponse:
     """Return the next photo for display."""
 
+    if not client_id.strip():
+        raise HTTPException(status_code=422, detail="client_id must not be blank.")
+
     photo = photo_service.get_next_photo(client_id)
     if photo is None:
         raise HTTPException(status_code=404, detail="No photos available.")
