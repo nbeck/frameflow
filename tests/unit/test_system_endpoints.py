@@ -216,14 +216,16 @@ def test_sync_returns_409_when_already_running() -> None:
 
 
 @pytest.mark.unit
-def test_sync_propagates_scheduler_exception() -> None:
+def test_sync_returns_500_on_unexpected_scheduler_exception() -> None:
     state = SyncState()
     app.dependency_overrides[get_scan_scheduler] = lambda: _FailingScheduler()
     app.dependency_overrides[get_sync_state] = lambda: state
 
     try:
-        with pytest.raises(RuntimeError, match="scan failed"):
-            TestClient(app, raise_server_exceptions=True).post("/sync")
+        response = TestClient(app).post("/sync")
+
+        assert response.status_code == 500
+        assert response.json() == {"detail": "Sync failed unexpectedly."}
     finally:
         app.dependency_overrides.clear()
 

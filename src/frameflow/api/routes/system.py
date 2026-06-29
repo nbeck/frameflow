@@ -57,6 +57,8 @@ def trigger_sync(
         count = scheduler.run_once()
     except SyncAlreadyRunningError as exc:
         raise HTTPException(status_code=409, detail="Sync already in progress.") from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail="Sync failed unexpectedly.") from exc
 
     assert sync_state.last_sync_completed_at is not None
     return {
