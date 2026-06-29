@@ -3,6 +3,8 @@ from pathlib import Path
 
 import pytest
 
+from frameflow.api.dependencies import get_database_connection
+from frameflow.config import Settings
 from frameflow.storage import get_schema_version, initialize_database
 from frameflow.storage.migrations import migrate
 
@@ -85,3 +87,25 @@ def test_migrate_skips_fresh_database(tmp_path: Path) -> None:
         assert get_schema_version(connection) == 5
     finally:
         connection.close()
+
+
+def test_get_database_connection_initializes_schema_on_fresh_db(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """get_database_connection must apply the schema so requests succeed on a new installation."""
+    db_path = tmp_path / "fresh.db"
+    monkeypatch.setattr(
+        "frameflow.api.dependencies.load_settings",
+        lambda: Settings(database_path=str(db_path), photo_library=str(tmp_path)),
+    )
+    conn = None
+    get_database_connection.cache_clear()
+    try:
+        conn = get_database_connection()
+        assert get_schema_version(conn) == 5
+        result = conn.execute("SELECT COUNT(*) FROM photos").fetchone()
+        assert result == (0,)
+    finally:
+        if conn is not None:
+            conn.close()
+        get_database_connection.cache_clear()
