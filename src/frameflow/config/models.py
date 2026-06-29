@@ -4,7 +4,6 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .defaults import (
-    DEFAULT_DATA_DIR,
     DEFAULT_DATABASE_PATH,
     DEFAULT_ENVIRONMENT,
     DEFAULT_HOST,
@@ -29,7 +28,6 @@ class Settings(BaseSettings):
     host: str = Field(default=DEFAULT_HOST)
     port: int = Field(default=DEFAULT_PORT)
 
-    data_dir: str = Field(default=DEFAULT_DATA_DIR)
     database_path: str = Field(default=DEFAULT_DATABASE_PATH)
     photo_library: str = Field(default=DEFAULT_PHOTO_LIBRARY)
 
