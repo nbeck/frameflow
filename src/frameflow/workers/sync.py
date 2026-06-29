@@ -13,12 +13,25 @@ from frameflow.storage import PhotoRepository
 _LIBRARY_ID = "default"
 
 _sync_state = SyncState()
+_shared_scheduler: ScanScheduler | None = None
 
 
 def get_sync_state() -> SyncState:
     """Return the shared in-memory sync state."""
 
     return _sync_state
+
+
+def get_shared_scheduler(
+    settings: Settings,
+    connection: sqlite3.Connection,
+) -> ScanScheduler:
+    """Return the shared ScanScheduler singleton, creating it on first call."""
+
+    global _shared_scheduler
+    if _shared_scheduler is None:
+        _shared_scheduler = build_scan_scheduler(settings, connection)
+    return _shared_scheduler
 
 
 def build_scan_scheduler(

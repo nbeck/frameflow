@@ -11,7 +11,7 @@ from frameflow.scanning import ScanScheduler, SyncState
 from frameflow.services import PhotoService
 from frameflow.services.photo_selection import PhotoSelectionService
 from frameflow.storage import PhotoRepository
-from frameflow.workers.sync import build_scan_scheduler
+from frameflow.workers.sync import get_shared_scheduler as _get_shared_scheduler
 from frameflow.workers.sync import get_sync_state as _get_sync_state
 
 
@@ -49,6 +49,6 @@ def get_sync_state() -> SyncState:
 
 
 def get_scan_scheduler() -> ScanScheduler:
-    """Return a fully wired ScanScheduler."""
+    """Return the shared ScanScheduler."""
 
-    return build_scan_scheduler(get_settings(), get_database_connection())
+    return _get_shared_scheduler(get_settings(), get_database_connection())
