@@ -56,6 +56,44 @@ class PhotoRepository:
 
         self._connection.commit()
 
+    def get_by_id(self, photo_id: str) -> Photo | None:
+        """Return a photo by its canonical domain ID (currently stored as content_hash)."""
+
+        row = self._connection.execute(
+            """
+            SELECT
+                library_id,
+                source_path,
+                content_hash,
+                file_size,
+                width,
+                height,
+                image_format,
+                modified_at
+            FROM photos
+            WHERE content_hash = ?
+            """,
+            (photo_id,),
+        ).fetchone()
+
+        if row is None:
+            return None
+
+        content_hash = str(row[2])
+        modified_at_value = str(row[7])
+
+        return Photo(
+            id=content_hash,
+            library_id=str(row[0]),
+            source_path=Path(str(row[1])),
+            content_hash=content_hash,
+            file_size=int(row[3]),
+            width=int(row[4]),
+            height=int(row[5]),
+            image_format=str(row[6]),
+            modified_at=(datetime.fromisoformat(modified_at_value) if modified_at_value else None),
+        )
+
     def list_all(self) -> list[Photo]:
         """Return all stored photos."""
 

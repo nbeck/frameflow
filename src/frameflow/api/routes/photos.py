@@ -1,11 +1,13 @@
 """Photo endpoints."""
 
+import io
 import mimetypes
 from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
+from PIL import Image
 
 from frameflow.api.dependencies import get_photo_service
 from frameflow.services import PhotoService
@@ -27,6 +29,33 @@ def list_photos(
         }
         for photo in photo_service.list_photos()
     ]
+
+
+@router.get("/{photo_id}/thumbnail")
+def photo_thumbnail(
+    photo_id: str,
+    photo_service: Annotated[PhotoService, Depends(get_photo_service)],
+) -> Response:
+    """Return a thumbnail for the given photo."""
+
+    photo = photo_service.get_photo_by_id(photo_id)
+    if photo is None:
+        raise HTTPException(status_code=404, detail="Photo not found.")
+
+    path = Path(photo.source_path).resolve()
+    if not path.exists() or not path.is_file():
+        raise HTTPException(status_code=404, detail="Photo file not found.")
+
+    with Image.open(path) as source:
+        rgb = source.convert("RGB")
+        rgb.thumbnail((400, 400))
+        buffer = io.BytesIO()
+        rgb.save(buffer, format="JPEG")
+
+    return Response(
+        content=buffer.getvalue(),
+        media_type="image/jpeg",
+    )
 
 
 @router.get("/next")
