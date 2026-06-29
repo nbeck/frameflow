@@ -13,6 +13,22 @@ from frameflow.services import PhotoService
 router = APIRouter(prefix="/photos", tags=["photos"])
 
 
+@router.get("")
+def list_photos(
+    photo_service: Annotated[PhotoService, Depends(get_photo_service)],
+) -> list[dict[str, str | None]]:
+    """Return metadata for all known photos."""
+
+    return [
+        {
+            "id": photo.id,
+            "source_path": str(photo.source_path),
+            "content_hash": photo.content_hash,
+        }
+        for photo in photo_service.list_photos()
+    ]
+
+
 @router.get("/next")
 def next_photo(
     client_id: str,
