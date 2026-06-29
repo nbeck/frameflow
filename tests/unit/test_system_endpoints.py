@@ -7,7 +7,12 @@ import pytest
 from fastapi.testclient import TestClient
 
 from frameflow.api.app import app
-from frameflow.api.dependencies import get_photo_service, get_settings, get_sync_state
+from frameflow.api.dependencies import (
+    get_photo_service,
+    get_scan_scheduler,
+    get_settings,
+    get_sync_state,
+)
 from frameflow.config import Settings
 from frameflow.domain import Photo
 from frameflow.scanning import SyncState
@@ -27,6 +32,24 @@ class StubPhotoService:
 
     def get_next_photo(self, client_id: str) -> Photo | None:
         return None
+
+
+class _StubScheduler:
+    def __init__(self, count: int, state: SyncState, completed_at: datetime) -> None:
+        self._count = count
+        self._state = state
+        self._completed_at = completed_at
+
+    def run_once(self) -> int:
+        self._state.sync_running = False
+        self._state.last_sync_completed_at = self._completed_at
+        self._state.last_sync_photos_processed = self._count
+        return self._count
+
+
+class _FailingScheduler:
+    def run_once(self) -> int:
+        raise RuntimeError("scan failed")
 
 
 def _make_photo(tmp_path: Path, n: int) -> Photo:
@@ -149,6 +172,57 @@ def test_status_sync_running_true_while_syncing(tmp_path: Path) -> None:
         body = TestClient(app).get("/status").json()
 
         assert body["sync_running"] is True
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.unit
+def test_sync_returns_200_with_correct_fields(tmp_path: Path) -> None:
+    completed_at = datetime(2026, 6, 29, 12, 0, 0, tzinfo=UTC)
+    state = SyncState()
+
+    stub_scheduler = _StubScheduler(count=5, state=state, completed_at=completed_at)
+    app.dependency_overrides[get_scan_scheduler] = lambda: stub_scheduler
+    app.dependency_overrides[get_sync_state] = lambda: state
+
+    try:
+        response = TestClient(app).post("/sync")
+
+        assert response.status_code == 200
+        body = response.json()
+        assert body["status"] == "ok"
+        assert body["photos_processed"] == 5
+        assert body["sync_completed_at"] == completed_at.isoformat()
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.unit
+def test_sync_returns_409_when_already_running() -> None:
+    state = SyncState(sync_running=True)
+    app.dependency_overrides[get_sync_state] = lambda: state
+    app.dependency_overrides[get_scan_scheduler] = lambda: _StubScheduler(
+        count=0, state=state, completed_at=datetime(2026, 1, 1, tzinfo=UTC)
+    )
+
+    try:
+        response = TestClient(app).post("/sync")
+
+        assert response.status_code == 409
+        assert "already in progress" in response.json()["detail"]
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.unit
+def test_sync_propagates_scheduler_exception() -> None:
+    state = SyncState()
+    app.dependency_overrides[get_scan_scheduler] = lambda: _FailingScheduler()
+    app.dependency_overrides[get_sync_state] = lambda: state
+
+    try:
+        with pytest.raises(RuntimeError, match="scan failed"):
+            TestClient(app, raise_server_exceptions=True).post("/sync")
     finally:
         app.dependency_overrides.clear()
 
