@@ -1,7 +1,6 @@
 """API integration tests covering the Milestone 3 API surface."""
 
 import io
-import sqlite3
 from collections.abc import Generator
 from dataclasses import dataclass
 from datetime import UTC, datetime
@@ -60,14 +59,8 @@ def test_app(tmp_path: Path) -> Generator[AppFixture, None, None]:
         )
         photos.append(photo)
 
-    # initialize_database uses check_same_thread=True (sqlite default).
-    # TestClient dispatches requests in worker threads, so we reopen the
-    # same file with check_same_thread=False after schema setup.
     db_path = tmp_path / "frameflow.db"
-    init_conn = initialize_database(db_path)
-    init_conn.close()
-    database = sqlite3.connect(str(db_path), check_same_thread=False)
-    database.execute("PRAGMA foreign_keys = ON")
+    database = initialize_database(db_path)
 
     photo_repository = PhotoRepository(database)
     history_repository = RotationHistoryRepository(database)

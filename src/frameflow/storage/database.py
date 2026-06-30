@@ -18,7 +18,7 @@ def initialize_database(path: Path) -> sqlite3.Connection:
 
     path.parent.mkdir(parents=True, exist_ok=True)
 
-    connection = sqlite3.connect(path)
+    connection = sqlite3.connect(path, check_same_thread=False)
     connection.execute("PRAGMA foreign_keys = ON")
     connection.executescript(SCHEMA_SQL)
     migrate(connection)
