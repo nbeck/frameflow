@@ -10,7 +10,10 @@ from fastapi.responses import FileResponse, Response
 from PIL import Image
 
 from frameflow.api.dependencies import get_photo_service
+from frameflow.infrastructure.logging import get_logger
 from frameflow.services import PhotoService
+
+_logger = get_logger("frameflow.api")
 
 router = APIRouter(prefix="/photos", tags=["photos"])
 
@@ -53,6 +56,9 @@ def photo_thumbnail(
             buffer = io.BytesIO()
             rgb.save(buffer, format="JPEG")
     except Exception as exc:
+        _logger.warning(
+            "Thumbnail generation failed: photo_id=%s path=%s", photo_id, path, exc_info=True
+        )
         raise HTTPException(status_code=500, detail="Thumbnail could not be generated.") from exc
 
     return Response(

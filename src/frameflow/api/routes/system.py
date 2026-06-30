@@ -12,9 +12,12 @@ from frameflow.api.dependencies import (
     get_sync_state,
 )
 from frameflow.config import Settings
+from frameflow.infrastructure.logging import get_logger
 from frameflow.providers.local import SUPPORTED_IMAGE_EXTENSIONS
 from frameflow.scanning import ScanScheduler, SyncAlreadyRunningError, SyncState
 from frameflow.services import PhotoService
+
+_logger = get_logger("frameflow.api")
 
 router = APIRouter(tags=["system"])
 
@@ -53,12 +56,16 @@ def trigger_sync(
 ) -> dict[str, object]:
     """Trigger a single photo library synchronization run."""
 
+    _logger.info("Manual sync requested")
     try:
         count = scheduler.run_once()
     except SyncAlreadyRunningError as exc:
+        _logger.debug("Manual sync rejected: sync already in progress")
         raise HTTPException(status_code=409, detail="Sync already in progress.") from exc
     except Exception as exc:
+        _logger.error("Manual sync failed", exc_info=True)
         raise HTTPException(status_code=500, detail="Sync failed unexpectedly.") from exc
+    _logger.info("Manual sync completed: %d photos processed", count)
 
     assert sync_state.last_sync_completed_at is not None
     return {
