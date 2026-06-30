@@ -20,4 +20,4 @@ def test_repository_has_required_files() -> None:
 
 
 def test_package_metadata_is_available() -> None:
-    assert frameflow.__version__ == "1.0.0"
+    assert frameflow.__version__ == "1.1.0"
