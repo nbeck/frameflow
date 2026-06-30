@@ -104,7 +104,7 @@ def test_list_photos_returns_all_seeded_photos(test_app: AppFixture) -> None:
     for item in body:
         assert "id" in item
         assert "source_path" in item
-        assert "content_hash" in item
+        assert "content_hash" not in item
 
 
 def test_next_photo_serves_image_file(test_app: AppFixture) -> None:

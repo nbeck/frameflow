@@ -211,7 +211,7 @@ Sync state is in-memory and resets to `null` on process restart.
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/photos` | List all available photos with `id`, `source_path`, and `content_hash` |
+| `GET` | `/photos` | List all available photos with `id` and `source_path` |
 | `GET` | `/photos/next?client_id=<str>` | Serve the next photo file for a display client |
 | `GET` | `/photos/{photo_id}/thumbnail` | Serve a 400×400 JPEG thumbnail |
 
@@ -232,7 +232,7 @@ Returns the raw image file directly (not JSON) with the appropriate `Content-Typ
 
 #### `GET /photos/{photo_id}/thumbnail`
 
-`photo_id` is the `content_hash` of the photo (returned by `GET /photos`).
+`photo_id` is the `id` of the photo (returned by `GET /photos`).
 Returns a JPEG image regardless of the original format.
 Thumbnail dimensions are constrained to 400×400 pixels while preserving aspect ratio.
 
@@ -261,7 +261,7 @@ the first request is served. Manual setup is not required.
 | Table | Purpose |
 |---|---|
 | `photos` | One row per known photo file. `available=1` means the file was present in the last sync. |
-| `photo_history` | One row per display event, keyed by `content_hash` and `client_name`. |
+| `photo_history` | One row per display event, keyed by photo id and client name. |
 | `schema_version` | Single-row version tracker for migration management. |
 
 ### Backups

@@ -11,6 +11,7 @@ from frameflow.api.dependencies import (
     get_settings,
     get_sync_state,
 )
+from frameflow.api.schemas import ConfigResponse, StatusResponse, SyncResponse
 from frameflow.config import Settings
 from frameflow.infrastructure.logging import get_logger
 from frameflow.providers.local import SUPPORTED_IMAGE_EXTENSIONS
@@ -22,38 +23,38 @@ _logger = get_logger("frameflow.api")
 router = APIRouter(tags=["system"])
 
 
-@router.get("/status")
+@router.get("/status", response_model=StatusResponse)
 def status(
     photo_service: Annotated[PhotoService, Depends(get_photo_service)],
     settings: Annotated[Settings, Depends(get_settings)],
     sync_state: Annotated[SyncState, Depends(get_sync_state)],
-) -> dict[str, object]:
+) -> StatusResponse:
     """Return API status and runtime health indicators."""
 
     library_path = settings.photo_library
     library_exists = Path(library_path).is_dir()
     photo_count = len(photo_service.list_photos())
 
-    return {
-        "status": "ok",
-        "library_path": library_path,
-        "library_exists": library_exists,
-        "photo_count": photo_count,
-        "last_sync_completed_at": (
+    return StatusResponse(
+        status="ok",
+        library_path=library_path,
+        library_exists=library_exists,
+        photo_count=photo_count,
+        last_sync_completed_at=(
             sync_state.last_sync_completed_at.isoformat()
             if sync_state.last_sync_completed_at
             else None
         ),
-        "last_sync_photos_processed": sync_state.last_sync_photos_processed,
-        "sync_running": sync_state.sync_running,
-    }
+        last_sync_photos_processed=sync_state.last_sync_photos_processed,
+        sync_running=sync_state.sync_running,
+    )
 
 
-@router.post("/sync")
+@router.post("/sync", response_model=SyncResponse)
 def trigger_sync(
     scheduler: Annotated[ScanScheduler, Depends(get_scan_scheduler)],
     sync_state: Annotated[SyncState, Depends(get_sync_state)],
-) -> dict[str, object]:
+) -> SyncResponse:
     """Trigger a single photo library synchronization run."""
 
     _logger.info("Manual sync requested")
@@ -68,22 +69,22 @@ def trigger_sync(
     _logger.info("Manual sync completed: %d photos processed", count)
 
     assert sync_state.last_sync_completed_at is not None
-    return {
-        "status": "ok",
-        "photos_processed": count,
-        "sync_completed_at": sync_state.last_sync_completed_at.isoformat(),
-    }
+    return SyncResponse(
+        status="ok",
+        photos_processed=count,
+        sync_completed_at=sync_state.last_sync_completed_at.isoformat(),
+    )
 
 
-@router.get("/config")
+@router.get("/config", response_model=ConfigResponse)
 def config(
     settings: Annotated[Settings, Depends(get_settings)],
-) -> dict[str, object]:
+) -> ConfigResponse:
     """Return safe runtime configuration."""
 
-    return {
-        "library_path": settings.photo_library,
-        "environment": settings.environment,
-        "log_level": settings.log_level,
-        "supported_extensions": sorted(SUPPORTED_IMAGE_EXTENSIONS),
-    }
+    return ConfigResponse(
+        library_path=settings.photo_library,
+        environment=settings.environment,
+        log_level=settings.log_level,
+        supported_extensions=sorted(SUPPORTED_IMAGE_EXTENSIONS),
+    )
