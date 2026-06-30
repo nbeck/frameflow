@@ -49,10 +49,10 @@ dev = [
 frameflow = "frameflow.__main__:main"
 
 [project.urls]
-Homepage = "https://github.com/YOUR_ORG/frameflow"
-Documentation = "https://YOUR_ORG.github.io/frameflow"
-Repository = "https://github.com/YOUR_ORG/frameflow"
-Issues = "https://github.com/YOUR_ORG/frameflow/issues"
+Homepage = "https://github.com/nbeck/frameflow"
+Documentation = "https://nbeck.github.io/frameflow"
+Repository = "https://github.com/nbeck/frameflow"
+Issues = "https://github.com/nbeck/frameflow/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/frameflow"]
