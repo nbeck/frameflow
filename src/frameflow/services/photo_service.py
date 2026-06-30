@@ -1,11 +1,18 @@
 """Photo orchestration service."""
 
+import threading
 from datetime import UTC, datetime
 
 from frameflow.domain import DisplayEvent, Photo
 from frameflow.history import RotationHistoryRepository
 from frameflow.services.photo_selection import PhotoSelectionService
 from frameflow.storage import PhotoRepository
+
+# Serializes the read-history / select / record sequence across all concurrent
+# requests.  Without this, two threads can both read an empty history, both
+# select the same photo, and both write to the shared sqlite3 connection
+# simultaneously (which raises InterfaceError on Python 3.14+).
+_rotation_lock = threading.Lock()
 
 
 class PhotoService:
@@ -36,23 +43,24 @@ class PhotoService:
         source file no longer exists on disk.
         """
 
-        photos = self._photo_repository.list_all()
-        history = self._history_repository.recent_for_client(client_id)
+        with _rotation_lock:
+            photos = self._photo_repository.list_all()
+            history = self._history_repository.recent_for_client(client_id)
 
-        selected_photo = self._selection_service.next_photo(photos, history)
-        if selected_photo is None:
-            return None
+            selected_photo = self._selection_service.next_photo(photos, history)
+            if selected_photo is None:
+                return None
 
-        if not selected_photo.source_path.exists():
-            self._photo_repository.mark_unavailable({selected_photo.source_path})
-            return None
+            if not selected_photo.source_path.exists():
+                self._photo_repository.mark_unavailable({selected_photo.source_path})
+                return None
 
-        self._history_repository.record(
-            DisplayEvent(
-                photo_id=selected_photo.id,
-                client_id=client_id,
-                displayed_at=datetime.now(UTC),
+            self._history_repository.record(
+                DisplayEvent(
+                    photo_id=selected_photo.id,
+                    client_id=client_id,
+                    displayed_at=datetime.now(UTC),
+                )
             )
-        )
 
         return selected_photo
