@@ -40,6 +40,7 @@ nav:
       - Backup and Restore: operations/backup-restore.md
       - Observability: operations/observability.md
       - Security: operations/security.md
+      - Display Setup: operations/display-setup.md
   - Roadmap:
       - Milestone 0: roadmap/milestone-0-repository-foundation.md
       - Milestone 1: roadmap/milestone-1-core-domain-storage.md

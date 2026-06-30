@@ -2,7 +2,7 @@
 
 DAKboard is the first supported display client for FrameFlow.
 
-See [ADR-0010](../adr/0010-display-client-architecture.md) for the architectural decisions that govern this integration.
+See ADR-0010 (`adr/0010-display-client-architecture.md`) for the architectural decisions that govern this integration.
 
 ## Integration model
 
