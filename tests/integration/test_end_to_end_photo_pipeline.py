@@ -170,3 +170,19 @@ def test_rotation_is_independent_per_client(test_app: AppFixture) -> None:
     assert all(e.client_id == "client-a" for e in history_a)
     assert len(history_b) == 1
     assert all(e.client_id == "client-b" for e in history_b)
+
+
+def test_display_photo_returns_image(test_app: AppFixture) -> None:
+    response = test_app.client.get("/displays/kitchen/photo")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("image/")
+    assert len(response.content) > 0
+
+
+def test_display_photo_records_display_id_in_history(test_app: AppFixture) -> None:
+    test_app.client.get("/displays/kitchen/photo")
+
+    history = test_app.history_repository.recent_for_client("kitchen")
+    assert len(history) == 1
+    assert history[0].client_id == "kitchen"
