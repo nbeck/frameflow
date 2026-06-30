@@ -6,9 +6,7 @@ It is designed for people who manage always-on photo displays, including remote 
 
 ## Project status
 
-FrameFlow is in the repository-foundation phase. The repository intentionally includes architecture, governance, tooling, documentation, CI, and project planning before application implementation begins.
-
-No production application code should be added until Milestone 1 is opened and accepted.
+FrameFlow is approaching its first public release (v1.0.0). The core delivery pipeline — local library sync, SQLite persistence, rotation engine, and DAKboard-compatible REST endpoints — is implemented and tested.
 
 ## Product principles
 
@@ -28,15 +26,13 @@ No production application code should be added until Milestone 1 is opened and a
 
 Digital displays often repeat the same photos too frequently, especially when connected directly to shared cloud albums. FrameFlow acts as a controlled photo delivery layer between photo providers and displays.
 
-FrameFlow will:
+FrameFlow:
 
-- ingest and reconcile photo libraries from providers
-- preserve immutable originals
-- generate display-ready derivatives separately
-- track display history
-- avoid excessive repetition
-- expose simple REST endpoints for display clients
-- explain why a photo was selected or skipped
+- ingests and reconciles photo libraries from providers
+- preserves immutable originals
+- tracks display history per client
+- avoids excessive repetition using a least-recently-displayed rotation policy
+- exposes simple REST endpoints for display clients
 
 ## Repository map
 
@@ -44,91 +40,46 @@ FrameFlow will:
 frameflow/
 ├── docs/                  # Product, architecture, operations, and implementation docs
 ├── adr/                   # Architecture Decision Records
-├── src/frameflow/         # Python package skeleton only, no application code yet
-├── tests/                 # Scaffold and future test suites
+├── src/frameflow/         # Python application package
+├── tests/                 # Unit, integration, and contract test suites
 ├── alembic/               # Database migration scaffolding
-├── docker/                # Docker-related documentation and future assets
-├── scripts/               # Developer workflow helpers
 └── .github/               # GitHub Actions, issue templates, PR template, Dependabot
 ```
-
-## Documentation starting points
-
-- [Architecture overview](docs/architecture/overview.md)
-- [System context](docs/architecture/system-context.md)
-- [Synchronization model](docs/architecture/provider-sync.md)
-- [Rotation engine](docs/architecture/rotation-engine.md)
-- [Storage model](docs/architecture/storage.md)
-- [Data model](docs/architecture/data-model.md)
-- [Milestone plan](docs/roadmap/milestone-0-repository-foundation.md)
-- [GitHub setup](GITHUB_SETUP.md)
-
-## Development
-
-FrameFlow uses Python, FastAPI, Docker, Ruff, Black, MyPy, Pytest, Alembic, and MkDocs.
-
-```bash
-make bootstrap
-make check
-```
-
-The current repository scaffold is expected to pass formatting, linting, type checking, and tests once dependencies are installed.
-
-## License
-
-FrameFlow is licensed under the Apache License 2.0. See [LICENSE](LICENSE), [NOTICE](NOTICE), and [licenses/](licenses/).
 
 ## Development
 
 ### Prerequisites
 
 - Python 3.12 or newer
-- Git
-- Docker Desktop (optional, for containerized development)
+- [uv](https://docs.astral.sh/uv/) for dependency management
+- [just](https://just.systems/) as the task runner
 
-### Clone the repository
+### Clone and set up
 
 ```bash
 git clone https://github.com/nbeck/frameflow.git
 cd frameflow
+just setup
 ```
 
-### Create a virtual environment
+### Validate
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
+just check
 ```
 
-### Install dependencies
+This runs Ruff, Black, MyPy, and Pytest with coverage.
+
+### Run the server
 
 ```bash
-pip install -e ".[dev]"
+cp .env.example .env   # edit as needed
+uv run frameflow
 ```
 
-## Running FrameFlow
+The API will be available at `http://localhost:8000`. See [docs/operations.md](docs/operations.md) for the full configuration reference.
 
-Start the development server:
-
-```bash
-uvicorn frameflow.api.app:app --reload
-```
-
-The API will be available at:
-
-```
-http://localhost:8000
-```
-
-Health endpoint:
-
-```
-http://localhost:8000/health
-```
-
-## Quality Checks
-
-Run the complete validation suite before committing changes:
+### Individual validation commands
 
 ```bash
 uv run ruff check .
@@ -137,18 +88,12 @@ uv run mypy .
 uv run pytest
 ```
 
-## Docker Development
+## Docker
 
-Build and start the development environment:
+Build verification:
 
 ```bash
 docker compose up --build
-```
-
-Stop the stack:
-
-```bash
-docker compose down
 ```
 
 ## Contributing
@@ -157,6 +102,10 @@ Before opening a pull request:
 
 1. Create a feature branch from `main`.
 2. Keep changes focused on a single issue.
-3. Run the full validation suite.
+3. Run `just check` and ensure all checks pass.
 4. Ensure all GitHub Actions checks pass.
 5. Squash merge after review.
+
+## License
+
+FrameFlow is licensed under the Apache License 2.0. See [LICENSE](LICENSE), [NOTICE](NOTICE), and [licenses/](licenses/).
