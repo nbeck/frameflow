@@ -46,5 +46,7 @@ class PhotoSynchronizer:
 
         missing_paths = set(self._repository.list_paths()) - current_paths
         self._repository.mark_unavailable(missing_paths)
+        if missing_paths:
+            _logger.warning("Marked %d photo(s) as unavailable", len(missing_paths))
 
         return processed

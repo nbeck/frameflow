@@ -5,8 +5,12 @@ from __future__ import annotations
 import sqlite3
 from pathlib import Path
 
+from frameflow.infrastructure.logging import get_logger
+
 from .migrations import migrate, set_schema_version
-from .schema import SCHEMA_SQL
+from .schema import SCHEMA_SQL, SCHEMA_VERSION
+
+_logger = get_logger("frameflow.storage")
 
 
 def initialize_database(path: Path) -> sqlite3.Connection:
@@ -20,5 +24,7 @@ def initialize_database(path: Path) -> sqlite3.Connection:
     migrate(connection)
     set_schema_version(connection)
     connection.commit()
+
+    _logger.debug("Database ready at %s (schema v%d)", path, SCHEMA_VERSION)
 
     return connection
