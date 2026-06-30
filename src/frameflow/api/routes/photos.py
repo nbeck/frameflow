@@ -70,6 +70,7 @@ def photo_thumbnail(
     return Response(
         content=buffer.getvalue(),
         media_type="image/jpeg",
+        headers={"Cache-Control": "public, max-age=86400, immutable"},
     )
 
 
@@ -107,4 +108,5 @@ def next_photo(
         path=path,
         media_type=media_type or "application/octet-stream",
         filename=path.name,
+        headers={"Cache-Control": "no-store"},
     )

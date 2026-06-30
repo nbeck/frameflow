@@ -230,6 +230,7 @@ def test_next_photo_returns_file(tmp_path: Path) -> None:
         assert response.status_code == 200
         assert response.content == b"fake image data"
         assert response.headers["content-type"] == "image/jpeg"
+        assert response.headers["cache-control"] == "no-store"
         assert service.client_id == "kitchen-dakboard"
     finally:
         app.dependency_overrides.clear()
@@ -298,6 +299,7 @@ def test_thumbnail_returns_image_response(tmp_path: Path) -> None:
 
         assert response.status_code == 200
         assert response.headers["content-type"] == "image/jpeg"
+        assert response.headers["cache-control"] == "public, max-age=86400, immutable"
         assert len(response.content) > 0
     finally:
         app.dependency_overrides.clear()
