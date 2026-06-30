@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, Response
 from PIL import Image
 
 from frameflow.api.dependencies import get_photo_service
+from frameflow.api.schemas import PhotoSummary
 from frameflow.infrastructure.logging import get_logger
 from frameflow.services import PhotoService
 
@@ -18,23 +19,28 @@ _logger = get_logger("frameflow.api")
 router = APIRouter(prefix="/photos", tags=["photos"])
 
 
-@router.get("")
+@router.get("", response_model=list[PhotoSummary])
 def list_photos(
     photo_service: Annotated[PhotoService, Depends(get_photo_service)],
-) -> list[dict[str, str | None]]:
+) -> list[PhotoSummary]:
     """Return metadata for all known photos."""
 
     return [
-        {
-            "id": photo.id,
-            "source_path": str(photo.source_path),
-            "content_hash": photo.content_hash,
-        }
+        PhotoSummary(id=photo.id, source_path=str(photo.source_path))
         for photo in photo_service.list_photos()
     ]
 
 
-@router.get("/{photo_id}/thumbnail")
+@router.get(
+    "/{photo_id}/thumbnail",
+    response_class=Response,
+    responses={
+        200: {
+            "content": {"image/jpeg": {}},
+            "description": "JPEG thumbnail, max 400x400 pixels.",
+        },
+    },
+)
 def photo_thumbnail(
     photo_id: str,
     photo_service: Annotated[PhotoService, Depends(get_photo_service)],
@@ -67,7 +73,16 @@ def photo_thumbnail(
     )
 
 
-@router.get("/next")
+@router.get(
+    "/next",
+    response_class=FileResponse,
+    responses={
+        200: {
+            "content": {"image/*": {}},
+            "description": "Photo file in its original format.",
+        },
+    },
+)
 def next_photo(
     client_id: str,
     photo_service: Annotated[PhotoService, Depends(get_photo_service)],

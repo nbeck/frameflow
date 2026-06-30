@@ -93,7 +93,6 @@ def test_list_photos_returns_photo_metadata(tmp_path: Path) -> None:
             {
                 "id": "hash-1",
                 "source_path": str(photo_path),
-                "content_hash": "hash-1",
             }
         ]
     finally:
@@ -141,12 +140,10 @@ def test_list_photos_returns_multiple_photos(tmp_path: Path) -> None:
             {
                 "id": "hash-1",
                 "source_path": str(photo_path_1),
-                "content_hash": "hash-1",
             },
             {
                 "id": "hash-2",
                 "source_path": str(photo_path_2),
-                "content_hash": "hash-2",
             },
         ]
     finally:
@@ -177,6 +174,7 @@ def test_list_photos_does_not_expose_sqlite_surrogate_id(tmp_path: Path) -> None
         assert response.status_code == 200
         assert "sqlite_id" not in response.json()[0]
         assert "database_id" not in response.json()[0]
+        assert "content_hash" not in response.json()[0]
     finally:
         app.dependency_overrides.clear()
 
