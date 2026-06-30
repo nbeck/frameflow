@@ -68,7 +68,12 @@ def trigger_sync(
         raise HTTPException(status_code=500, detail="Sync failed unexpectedly.") from exc
     _logger.info("Manual sync completed: %d photos processed", count)
 
-    assert sync_state.last_sync_completed_at is not None
+    if sync_state.last_sync_completed_at is None:
+        _logger.error("Sync completed but sync state was not updated")
+        raise HTTPException(
+            status_code=500,
+            detail="Sync completed but state could not be read.",
+        )
     return SyncResponse(
         status="ok",
         photos_processed=count,
