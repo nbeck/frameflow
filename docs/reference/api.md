@@ -1,14 +1,21 @@
 # API Reference
 
-The API is not implemented yet. This page reserves the reference location for generated or hand-written API documentation.
+The FrameFlow REST API is fully implemented as of v1.0.0.
 
-See [API design](../architecture/api-design.md) for the intended endpoint families.
+The authoritative API reference — including all endpoint paths, request parameters, response schemas, status codes, and example responses — is in the [Operations Runbook](../operations.md#api-endpoints).
 
-When implementation begins, this reference should include:
+## Quick reference
 
-- endpoint paths
-- request examples
-- response examples
-- authentication requirements
-- error codes
-- DAKboard usage examples
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/health` | Process liveness check |
+| `GET` | `/status` | Library path, photo count, and sync state |
+| `GET` | `/config` | Active runtime configuration |
+| `POST` | `/sync` | Trigger an immediate library sync |
+| `GET` | `/photos` | List all available photos |
+| `GET` | `/photos/next?client_id=<str>` | Serve the next photo for a display client |
+| `GET` | `/photos/{photo_id}/thumbnail` | Serve a JPEG thumbnail |
+
+All endpoints return JSON unless otherwise noted. `/photos/next` and `/photos/{photo_id}/thumbnail` return image files directly. No authentication is required.
+
+See the [Operations Runbook](../operations.md#api-endpoints) for full request and response documentation.
