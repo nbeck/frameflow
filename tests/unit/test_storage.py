@@ -1,4 +1,5 @@
 import sqlite3
+import threading
 from pathlib import Path
 
 import pytest
@@ -87,6 +88,34 @@ def test_migrate_skips_fresh_database(tmp_path: Path) -> None:
         assert get_schema_version(connection) == 5
     finally:
         connection.close()
+
+
+def test_initialize_database_connection_is_usable_from_different_thread(
+    tmp_path: Path,
+) -> None:
+    """Connection must not raise ProgrammingError when used across threads.
+
+    FastAPI dispatches sync handlers in a thread pool, so the lru_cache
+    singleton connection is always called from a different thread than the
+    one that created it. check_same_thread=False is required.
+    """
+    connection = initialize_database(tmp_path / "threadtest.db")
+
+    error: Exception | None = None
+
+    def use_in_thread() -> None:
+        nonlocal error
+        try:
+            connection.execute("SELECT 1").fetchone()
+        except Exception as exc:
+            error = exc
+
+    t = threading.Thread(target=use_in_thread)
+    t.start()
+    t.join()
+
+    connection.close()
+    assert error is None, f"Cross-thread connection use raised: {error}"
 
 
 def test_get_database_connection_initializes_schema_on_fresh_db(
