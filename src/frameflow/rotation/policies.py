@@ -21,7 +21,13 @@ class LeastRecentlyDisplayedPolicy:
         if not photos:
             return None
 
-        last_displayed = {event.photo_id: event.displayed_at for event in history}
+        # history is ordered newest-first; keep the first occurrence per photo so
+        # that repeated entries (from concurrent requests) don't overwrite the most
+        # recent timestamp with an older one.
+        last_displayed: dict[str, datetime] = {}
+        for event in history:
+            if event.photo_id not in last_displayed:
+                last_displayed[event.photo_id] = event.displayed_at
 
         return min(
             photos,

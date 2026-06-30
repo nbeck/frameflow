@@ -1,5 +1,6 @@
 """Photo service tests."""
 
+import threading
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -140,6 +141,99 @@ def test_get_next_photo_returns_none_when_source_file_missing(tmp_path: Path) ->
         assert result is None
         assert history_repository.recent_for_client("kitchen-dakboard") == []
         assert photo_repository.list_all() == []
+    finally:
+        database.close()
+
+
+def test_get_next_photo_rotates_through_all_photos(tmp_path: Path) -> None:
+    # Regression: repeated calls must advance through all photos in the library,
+    # not return the same photo every time.
+    database = initialize_database(tmp_path / "frameflow.db")
+    try:
+        photo_repository = PhotoRepository(database)
+        history_repository = RotationHistoryRepository(database)
+        service = PhotoService(
+            photo_repository=photo_repository,
+            history_repository=history_repository,
+            selection_service=PhotoSelectionService(RotationEngine()),
+        )
+
+        for i in range(1, 4):
+            photo_path = tmp_path / f"photo-{i}.jpg"
+            photo_path.write_bytes(b"fake")
+            photo_repository.upsert(
+                Photo(
+                    id=f"hash-{i}",
+                    library_id="default",
+                    source_path=photo_path,
+                    content_hash=f"hash-{i}",
+                    file_size=4,
+                    width=100,
+                    height=100,
+                    image_format="JPEG",
+                    modified_at=datetime(2026, 1, i, tzinfo=UTC),
+                )
+            )
+
+        ids = [service.get_next_photo("kitchen").id for _ in range(3)]  # type: ignore[union-attr]
+
+        assert len(set(ids)) == 3, f"Expected 3 distinct photos, got: {ids}"
+    finally:
+        database.close()
+
+
+def test_get_next_photo_is_safe_under_concurrent_requests(tmp_path: Path) -> None:
+    # Regression: concurrent requests must not all select the same photo (TOCTOU
+    # race) and must not raise InterfaceError from simultaneous sqlite3 access.
+    database = initialize_database(tmp_path / "frameflow.db")
+    try:
+        photo_repository = PhotoRepository(database)
+
+        for i in range(1, 4):
+            photo_path = tmp_path / f"photo-{i}.jpg"
+            photo_path.write_bytes(b"fake")
+            photo_repository.upsert(
+                Photo(
+                    id=f"hash-{i}",
+                    library_id="default",
+                    source_path=photo_path,
+                    content_hash=f"hash-{i}",
+                    file_size=4,
+                    width=100,
+                    height=100,
+                    image_format="JPEG",
+                    modified_at=datetime(2026, 1, i, tzinfo=UTC),
+                )
+            )
+
+        results: list[str | None] = []
+        errors: list[Exception] = []
+        barrier = threading.Barrier(4)
+
+        def call_service() -> None:
+            service = PhotoService(
+                photo_repository=PhotoRepository(database),
+                history_repository=RotationHistoryRepository(database),
+                selection_service=PhotoSelectionService(RotationEngine()),
+            )
+            try:
+                barrier.wait()
+                photo = service.get_next_photo("kitchen")
+                results.append(photo.id if photo else None)
+            except Exception as exc:
+                errors.append(exc)
+
+        threads = [threading.Thread(target=call_service) for _ in range(4)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert not errors, f"Concurrent requests raised: {errors}"
+        assert len(results) == 4
+        # All 3 photos must appear; the 4th call wraps back to the first
+        unique_photos = {r for r in results if r is not None}
+        assert len(unique_photos) == 3, f"Rotation did not advance through all photos: {results}"
     finally:
         database.close()
 

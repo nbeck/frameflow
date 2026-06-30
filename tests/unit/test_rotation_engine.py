@@ -1,8 +1,12 @@
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pytest
+
 from frameflow.domain import DisplayEvent, Photo
 from frameflow.rotation import RotationEngine
+
+pytestmark = pytest.mark.unit
 
 
 def photo(photo_id: str) -> Photo:
@@ -89,3 +93,34 @@ def test_selection_is_deterministic() -> None:
 
     assert selected is not None
     assert selected.id == "1"
+
+
+def test_duplicate_history_entries_use_newest_timestamp() -> None:
+    # Regression: concurrent requests can insert the same photo_id multiple
+    # times.  The policy must use the most recent displayed_at (not the oldest)
+    # so that a photo shown many times is not incorrectly treated as stale.
+    engine = RotationEngine()
+
+    photos = [photo("a"), photo("b"), photo("c")]
+
+    t1 = datetime(2026, 1, 1, 0, 0, 1, tzinfo=UTC)
+    t2 = datetime(2026, 1, 1, 0, 0, 2, tzinfo=UTC)
+    t3 = datetime(2026, 1, 1, 0, 0, 3, tzinfo=UTC)
+    t4 = datetime(2026, 1, 1, 0, 0, 4, tzinfo=UTC)
+
+    # photo "a" was shown four times (concurrent burst), most recently at t4.
+    # photos "b" and "c" were shown once each at t2 and t3.
+    # history arrives newest-first (as recent_for_client returns it).
+    history = [
+        DisplayEvent(photo_id="a", client_id="kitchen", displayed_at=t4),
+        DisplayEvent(photo_id="c", client_id="kitchen", displayed_at=t3),
+        DisplayEvent(photo_id="b", client_id="kitchen", displayed_at=t2),
+        DisplayEvent(photo_id="a", client_id="kitchen", displayed_at=t1),
+    ]
+
+    selected = engine.next_photo(photos, history)
+
+    # "b" was last shown at t2 — the oldest unique last-displayed timestamp.
+    # If the policy mistakenly used t1 for "a", it would (incorrectly) pick "a".
+    assert selected is not None
+    assert selected.id == "b"
