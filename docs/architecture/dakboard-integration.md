@@ -2,46 +2,60 @@
 
 DAKboard is the first supported display client for FrameFlow.
 
-## Integration goal
+See [ADR-0010](../adr/0010-display-client-architecture.md) for the architectural decisions that govern this integration.
 
-FrameFlow should provide DAKboard with a stable image URL or feed that returns display-ready photos without relying on DAKboard's native cloud album rotation.
+## Integration model
 
-## Expected DAKboard usage
+FrameFlow provides DAKboard with a stable image URL that returns the next photo in rotation. DAKboard is configured with a **Photo URL block** pointing to:
 
-A user should be able to configure a DAKboard image block or custom block with a FrameFlow URL such as:
-
-```text
-https://frameflow.example.com/d/<display-token>/next.jpg
+```
+GET /displays/{display_id}/photo
 ```
 
-For local-only deployments, the URL may be on the home network. For remote family displays, the user will need a secure remote access approach, such as a reverse proxy, tunnel, or VPN. Native remote access guidance should be documented before recommending public exposure.
+Example:
 
-## Requirements
+```
+http://192.168.1.10:8000/displays/kitchen/photo
+```
 
-- Return a valid image response.
-- Avoid redirect loops.
-- Support cache behavior that does not cause DAKboard to show stale images forever.
-- Keep tokenized display access separate from admin access.
-- Select photos through the rotation engine, not by random file serving.
-- Record display events when DAKboard requests a new image.
+DAKboard fetches this URL on each configured refresh interval. FrameFlow returns the next photo from the rotation engine and records a display event in the rotation history. The endpoint is intentionally stateless from DAKboard's perspective — it fetches, receives an image, and displays it.
 
-## Cache strategy
+## Endpoint contract
 
-DAKboard and browsers may cache image URLs aggressively. FrameFlow should support cache-safe behavior by either:
+| Property | Value |
+|---|---|
+| Method | `GET` |
+| Path | `/displays/{display_id}/photo` |
+| `display_id` format | `[a-zA-Z0-9_-]{1,64}` |
+| Response (success) | `200` — image file in original format |
+| `Cache-Control` | `no-store, max-age=0` |
+| `X-Photo-Id` | Content hash of the served photo |
+| Response (no photos) | `503` with `Retry-After: 300` |
+| Response (file missing) | `404` |
 
-- returning appropriate cache headers for `next.jpg`, or
-- supporting a feed response with versioned asset URLs, or
-- documenting a cache-busting query strategy.
+`Cache-Control: no-store` ensures DAKboard (and intermediate caches) never reuse a previous response. The `X-Photo-Id` header allows the operator to identify which photo was served without inspecting the file.
 
-The first implementation should test actual DAKboard behavior before finalizing endpoint semantics.
+## Rotation behavior
 
-## Display-specific derivatives
+Each `display_id` maintains an independent rotation history. Two DAKboard panels configured with different display IDs (`kitchen`, `office`) advance their own sequences independently. There is no shared "current position" across displays.
 
-DAKboard displays may have different resolutions and orientations. FrameFlow should be able to generate display-specific derivatives so each display receives appropriately sized images.
+The rotation policy is least-recently-displayed: FrameFlow prefers photos that have never been shown on that display, then falls back to the oldest-displayed photo by timestamp.
 
-## Out of scope for the first DAKboard milestone
+## DAKboard-specific considerations
 
-- full DAKboard account API integration
-- managing DAKboard screens directly
-- editing DAKboard layouts
-- replacing DAKboard as a dashboard product
+**Refresh interval is the rotation cadence.** FrameFlow does not push photos to DAKboard; DAKboard polls. The refresh interval set in the DAKboard block directly controls how often the photo changes. See [Display Client Setup](../operations/display-setup.md) for recommended values.
+
+**No DAKboard account API integration.** FrameFlow does not interact with the DAKboard platform API. It only serves photos over HTTP.
+
+## Setup
+
+For step-by-step configuration instructions, see [Display Client Setup](../operations/display-setup.md).
+
+## Out of scope
+
+The following items are not implemented and remain deferred:
+
+- Full DAKboard account API integration (managing screens or layouts programmatically)
+- Display-specific image derivatives (resolution or orientation per display)
+- Server-side push or WebSocket delivery
+- Native remote access (use a reverse proxy; see [Security Operations](../operations/security.md))
