@@ -216,6 +216,25 @@ def test_sync_returns_409_when_already_running() -> None:
 
 
 @pytest.mark.unit
+def test_sync_returns_500_when_state_not_updated_after_run() -> None:
+    class _StatelessScheduler:
+        def run_once(self) -> int:
+            return 3
+
+    state = SyncState()  # last_sync_completed_at remains None
+    app.dependency_overrides[get_scan_scheduler] = lambda: _StatelessScheduler()
+    app.dependency_overrides[get_sync_state] = lambda: state
+
+    try:
+        response = TestClient(app).post("/sync")
+
+        assert response.status_code == 500
+        assert response.json() == {"detail": "Sync completed but state could not be read."}
+    finally:
+        app.dependency_overrides.clear()
+
+
+@pytest.mark.unit
 def test_sync_returns_500_on_unexpected_scheduler_exception() -> None:
     state = SyncState()
     app.dependency_overrides[get_scan_scheduler] = lambda: _FailingScheduler()
